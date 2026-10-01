@@ -11,6 +11,7 @@ build system, no tests, and no library sources in-tree.
 Repository setup: This directory is a standalone Git repository
 ([xiao-mg24-arduino-examples](https://github.com/melastmohican/xiao-mg24-arduino-examples)).
 Libraries resolve from the local Arduino sketchbook `libraries` folder (GxEPD2 1.6.9, Adafruit GFX).
+Cross-repository references: Only reference other repositories if they exist under the `melastmohican` GitHub account (`gh:melastmohican`). Verify existence with `gh repo view melastmohican/<repo>` before citing or linking.
 
 ## Build / upload
 
