@@ -1,5 +1,7 @@
 # Seeed Studio XIAO MG24 Sketches and E-Paper Drivers
 
+[![GitHub](https://img.shields.io/badge/GitHub-xiao--mg24--arduino--examples-blue?logo=github)](https://github.com/melastmohican/xiao-mg24-arduino-examples)
+
 Arduino sketches and display drivers for the Seeed Studio XIAO MG24 (Sense), powered by the Silicon Labs EFR32MG24 microcontroller (ARM Cortex-M33, 2.4 GHz multi-protocol radio for BLE 5.4, Matter, and Thread).
 
 This repository contains standalone test sketches, protocol examples, and e-paper display drivers targeting the Seeed Studio ePaper Driver Board for XIAO v2 across multiple display controllers (SSD1680, UC8253, JD79660).

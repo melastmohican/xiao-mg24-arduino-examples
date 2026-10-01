@@ -9,8 +9,8 @@ EFR32MG24 board. Every sketch here is a standalone `.ino`; there is no shared
 build system, no tests, and no library sources in-tree.
 
 Repository setup: This directory is a standalone Git repository
-(`xiao-mg24-arduino-examples`), located within the local Arduino sketchbook at
-`/Users/mordor/Src/Arduino/XIAO_MG24`.
+([xiao-mg24-arduino-examples](https://github.com/melastmohican/xiao-mg24-arduino-examples)),
+located within the local Arduino sketchbook at `/Users/mordor/Src/Arduino/XIAO_MG24`.
 
 The Arduino sketchbook is `/Users/mordor/Src/Arduino`, so libraries resolve
 from `/Users/mordor/Src/Arduino/libraries` (GxEPD2 1.6.9, Adafruit GFX).
