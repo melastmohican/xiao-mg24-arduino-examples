@@ -61,7 +61,7 @@ Standardized 6-page demonstration suites (splash, palette, typography, geometry,
 - `GxEPD2/GDEY0266Z90/Demo/`: 2.66 inch 3-color Red/Black/White (152x296)
 - `GxEPD2/GDEY0213F51/Demo/`: 2.13 inch 4-color Red/Yellow/Black/White (122x250)
 - `GxEPD2/GDEM0154F51H/Demo/`: 1.54 inch 4-color Red/Yellow/Black/White (200x200, JD79660)
-- `GxEPD2/GDEM037F51/Demo/`: 3.7 inch 4-color Red/Yellow/Black/White (240x416, IST7163)
+- `GxEPD2/GDEM037F51/Demo/`: 3.7 inch 4-color Red/Yellow/Black/White (240x416, IST7163). Dashboard text is right-aligned and shortened to fit the 240 px width.
 
 ### 3. Adafruit_EPD Driver Implementations (`Adafruit_EPD/`)
 

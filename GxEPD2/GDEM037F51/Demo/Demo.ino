@@ -123,6 +123,17 @@ void drawCenteredText(const char* text, int16_t y, const GFXfont* font)
 }
 
 // =====================================================================
+// Helper: Draw text right-aligned to rightX (uses the current font)
+// =====================================================================
+void drawRightText(const char* text, int16_t rightX, int16_t y)
+{
+  int16_t tbx, tby; uint16_t tbw, tbh;
+  display.getTextBounds(text, 0, 0, &tbx, &tby, &tbw, &tbh);
+  display.setCursor(rightX - tbw - tbx, y);
+  display.print(text);
+}
+
+// =====================================================================
 // Screen 1: Splash (240x416)
 // =====================================================================
 void showSplashScreen()
@@ -430,7 +441,7 @@ void showDashboard()
     display.setTextColor(C_WHITE);
     display.setFont(&FreeSansBold9pt7b);
     display.setCursor(12, 26);
-    display.print("SENSOR DASHBOARD");
+    display.print("DASHBOARD");
 
     display.fillRect(W - 40, 10, 28, 20, C_RED);
     display.setTextColor(C_WHITE);
@@ -451,8 +462,7 @@ void showDashboard()
     display.print("24.8 C");
     display.setFont(&FreeSans9pt7b);
     display.setTextColor(C_BLACK);
-    display.setCursor(140, 105);
-    display.print("Target: 22.0");
+    drawRightText("Tgt 22.0", W - 16, 105);
 
     // Card 2: Humidity
     display.drawRect(10, 135, W - 20, 75, C_BLACK);
@@ -467,8 +477,7 @@ void showDashboard()
     display.print("58.2 %");
     display.setFont(&FreeSans9pt7b);
     display.setTextColor(C_BLACK);
-    display.setCursor(140, 190);
-    display.print("Normal: 40-60");
+    drawRightText("Ref 40-60", W - 16, 190);
 
     // Card 3: Air Quality Status
     display.drawRect(10, 220, W - 20, 75, C_BLACK);
@@ -505,10 +514,10 @@ void showDashboard()
     display.setFont(&FreeSans9pt7b);
     display.setTextColor(C_BLACK);
     display.setCursor(15, 385);
-    display.print("Host: Seeed XIAO MG24");
+    display.print("Host: XIAO MG24");
     display.setCursor(15, 405);
     display.setTextColor(C_RED);
-    display.print("Panel: Good Display GDEM037F51");
+    display.print("Panel: GDEM037F51");
 
   } while (display.nextPage());
 }
