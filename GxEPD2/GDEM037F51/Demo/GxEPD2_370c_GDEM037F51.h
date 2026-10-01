@@ -15,7 +15,7 @@ class GxEPD2_370c_GDEM037F51 : public GxEPD2_EPD
     static const uint16_t HEIGHT = 416;
     static const GxEPD2::Panel panel = GxEPD2::GDEM0154F51H;
     static const bool hasColor = true;
-    static const bool hasPartialUpdate = true;
+    static const bool hasPartialUpdate = false;
     static const bool hasFastPartialUpdate = false;
     static const bool useFastFullUpdate = true;
     static const uint16_t power_on_time = 200;

@@ -49,7 +49,6 @@ void GxEPD2_370c_GDEM037F51::writeImage(const uint8_t bitmap[], int16_t x, int16
 {
   delay(1);
   if (!_init_display_done) _InitDisplay();
-  if (_initial_write) writeScreenBuffer();
   int16_t wb = (w + 7) / 8;
   x -= x % 8;
   w = wb * 8;
@@ -92,7 +91,6 @@ void GxEPD2_370c_GDEM037F51::writeImage(const uint8_t* black, const uint8_t* col
   if (!color) return writeImage(black, x, y, w, h, invert, mirror_y, pgm);
   delay(1);
   if (!_init_display_done) _InitDisplay();
-  if (_initial_write) writeScreenBuffer();
   int16_t wb = (w + 7) / 8;
   x -= x % 8;
   w = wb * 8;
@@ -144,7 +142,6 @@ void GxEPD2_370c_GDEM037F51::writeNative(const uint8_t* data1, const uint8_t* da
   if (!data1) return;
   delay(1);
   if (!_init_display_done) _InitDisplay();
-  if (_initial_write) writeScreenBuffer();
 
   int16_t wb = (w + 3) / 4;
   x -= x % 4;
@@ -171,6 +168,7 @@ void GxEPD2_370c_GDEM037F51::writeNative(const uint8_t* data1, const uint8_t* da
     }
   }
   _endTransfer();
+  _initial_write = false;
   delay(1);
 }
 
@@ -278,7 +276,7 @@ void GxEPD2_370c_GDEM037F51::setPaged()
 
 void GxEPD2_370c_GDEM037F51::_InitDisplay()
 {
-  if ((_rst >= 0) && (_hibernating || _initial_write))
+  if (_rst >= 0)
   {
     digitalWrite(_rst, HIGH);
     delay(20);
@@ -390,6 +388,7 @@ void GxEPD2_370c_GDEM037F51::_InitDisplay()
 
   _writeCommand(0x04); // Power on
   _waitWhileBusy("_InitDisplay (0x04)", power_on_time);
+  _power_is_on = true;
 
   _writeCommand(0xFF);
   _writeData(0xA5);
@@ -425,6 +424,5 @@ void GxEPD2_370c_GDEM037F51::_InitDisplay()
     _waitWhileBusy("_InitDisplay (0xA5)", power_on_time);
   }
 
-  _PowerOn();
   _init_display_done = true;
 }
