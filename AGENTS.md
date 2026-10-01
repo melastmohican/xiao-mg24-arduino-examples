@@ -133,7 +133,7 @@ the same six pins. **GxEPD2 1.6.9 has no 240x360 panel class at all** — only
   panel wants the black plane uninverted, and the init code needs an explicit
   `0x61` TRES entry that Adafruit's own UC8253 panel does not.
 
-Both were ported from the Adafruit Feather ThinkInk examples. Three Silicon Labs core
+Both were ported from [adafruit-feather-thinkink-examples](https://github.com/melastmohican/adafruit-feather-thinkink-examples). Three Silicon Labs core
 facts shaped the port and are worth knowing before touching either:
 
 - `SPI` (not `SPI1`) is the EPD bus, and no remap is needed or possible — the
