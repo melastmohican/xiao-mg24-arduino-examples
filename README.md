@@ -61,6 +61,7 @@ Standardized 6-page demonstration suites (splash, palette, typography, geometry,
 - `GxEPD2/GDEY0266Z90/Demo/`: 2.66 inch 3-color Red/Black/White (152x296)
 - `GxEPD2/GDEY0213F51/Demo/`: 2.13 inch 4-color Red/Yellow/Black/White (122x250)
 - `GxEPD2/GDEM0154F51H/Demo/`: 1.54 inch 4-color Red/Yellow/Black/White (200x200, JD79660)
+- `GxEPD2/GDEM037F51/Demo/`: 3.7 inch 4-color Red/Yellow/Black/White (240x416, IST7163)
 
 ### 3. Adafruit_EPD Driver Implementations (`Adafruit_EPD/`)
 
@@ -77,6 +78,7 @@ Self-contained C drivers adapted from Waveshare reference implementations:
 - `Waveshare_2in66br/`: 2.66 inch tricolor driver (SSD1680) with 180-degree byte-level raster inversion.
 - `Waveshare_2in66/`: 2.66 inch monochrome driver (SSD1680) with 40-second busy timeout guard and 180-degree orientation correction.
 - `Waveshare_1in54g/`: 1.54 inch 4-color driver (JD79660) with 2-bit-per-pixel buffer handling (10,000 bytes total).
+- `Waveshare_3in7g/`: 3.7 inch 4-color driver (IST7163) with 2-bit-per-pixel buffer handling (24,960 bytes total).
 
 ### 5. Good Display Official Samples (`good_display/`)
 
@@ -85,6 +87,7 @@ Low-level vendor examples demonstrating specific controller waveform modes:
 - `good_display/GDEY0266Z90/`: 2.66 inch tricolor sample with fast and partial refresh routines.
 - `good_display/GDEY0266T90/`: 2.66 inch monochrome sample with standard full refresh (2s), fast refresh (1.0s to 1.5s), and partial refresh clock demo (0.5s).
 - `good_display/GDEM0154F51H/`: 1.54 inch 4-color sample testing full refresh (20s) and fast update mode (12s to 15s).
+- `good_display/GDEM037F51/`: 3.7 inch 4-color sample testing full refresh (20s) and fast update mode (12s to 15s).
 
 ## Build and Flash Examples
 

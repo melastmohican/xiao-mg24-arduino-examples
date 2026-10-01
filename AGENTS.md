@@ -32,6 +32,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEY0266T90/` | `protocol_stack=none` |
 | `Waveshare_1in54g/`, `Adafruit_EPD/XIAO_Waveshare_1in54g/` | `protocol_stack=none` |
 | `good_display/GDEM0154F51H/` | `protocol_stack=none` |
+| `Waveshare_3in7g/`, `good_display/GDEM037F51/`, `GxEPD2/GDEM037F51/Demo/` | `protocol_stack=none` |
 
 ```sh
 # from repository root
@@ -68,10 +69,10 @@ the `sl_bt_on_event()` callback that the Silabs BLE stack invokes.
 commissioning credentials when re-pairing fails, then re-flash the real sketch.
 
 **GxEPD2 ePaper demos** (`GxEPD2/<PANEL>/Demo/Demo.ino`) target the *Seeed Studio
-ePaper Driver Board for XIAO v2*. Eight panels: `GDEM0213B74` (2.13" BW),
+ePaper Driver Board for XIAO v2*. Nine panels: `GDEM0213B74` (2.13" BW),
 `GDEY0266T90` (2.66" BW 152x296), `GDEY037T03` (3.7" BW), `GDEQ0426T82` (4.26" BW 800x480),
 `GDEH0154Z90` (1.54" 3-color), `GDEY0266Z90` (2.66" 3-color 152x296), `GDEY0213F51` (2.13" 4-color),
-and `GDEM0154F51H` (1.54" 4-color 200x200).
+`GDEM0154F51H` (1.54" 4-color 200x200), and `GDEM037F51` (3.7" 4-color 240x416).
 
 ## The GxEPD2 demo template
 
@@ -263,6 +264,29 @@ Hardware and controller specifics:
 - **BUSY is active LOW** on JD79660 (0 = busy, 1 = ready/idle), opposite of SSD1680.
 - **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red),
   4 pixels per byte (50 bytes/row, 10,000 bytes total).
+- **Refresh timing**: Full refresh takes ~20s; fast refresh takes ~12-15s. No partial refresh.
+
+## The Waveshare 3.7" (G) / GDEM037F51 sketches
+
+The 3.7-inch 4-color e-Paper panel: 240x416, IST7163 controller, 4 native colors
+(Black, White, Yellow, Red) at 2 bits per pixel (Waveshare SKU 31065, FPC-2303,
+Good Display `GDEM037F51`). Same Seeed driver board, same six pins (`RST D0`,
+`CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered by three independent
+driver paths:
+
+- `Waveshare_3in7g/`: Waveshare's vendored driver (`DEV_Config`, `EPD_3in7g`,
+  `GUI_Paint`, `ImageData`, `fonts`). Renders 4-color geometric and typography
+  primitives in memory and exercises `EPD_3IN7G_Init_Fast()`. Added 40s BUSY timeout.
+- `good_display/GDEM037F51/`: Good Display's vendor structure adapted for XIAO MG24,
+  demonstrating full refresh (~20s), fast update mode (~12-15s), and color fills.
+- `GxEPD2/GDEM037F51/Demo/`: In-sketch `GxEPD2_370c_GDEM037F51` panel class subclassing
+  `GxEPD2_EPD` with `<GxEPD2_4C.h>`, running the standard 6-screen 4-color suite.
+  Fits in a single 25KB RAM buffer on the XIAO MG24.
+
+Hardware and controller specifics:
+- **BUSY is active LOW** on IST7163 (0 = busy, 1 = ready/idle).
+- **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red),
+  4 pixels per byte (60 bytes/row, 24,960 bytes total).
 - **Refresh timing**: Full refresh takes ~20s; fast refresh takes ~12-15s. No partial refresh.
 
 
