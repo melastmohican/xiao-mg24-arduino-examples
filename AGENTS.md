@@ -9,11 +9,8 @@ EFR32MG24 board. Every sketch here is a standalone `.ino`; there is no shared
 build system, no tests, and no library sources in-tree.
 
 Repository setup: This directory is a standalone Git repository
-([xiao-mg24-arduino-examples](https://github.com/melastmohican/xiao-mg24-arduino-examples)),
-located within the local Arduino sketchbook at `/Users/mordor/Src/Arduino/XIAO_MG24`.
-
-The Arduino sketchbook is `/Users/mordor/Src/Arduino`, so libraries resolve
-from `/Users/mordor/Src/Arduino/libraries` (GxEPD2 1.6.9, Adafruit GFX).
+([xiao-mg24-arduino-examples](https://github.com/melastmohican/xiao-mg24-arduino-examples)).
+Libraries resolve from the local Arduino sketchbook `libraries` folder (GxEPD2 1.6.9, Adafruit GFX).
 
 ## Build / upload
 
@@ -36,7 +33,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEM0154F51H/` | `protocol_stack=none` |
 
 ```sh
-# from /Users/mordor/Src/Arduino/XIAO_MG24
+# from repository root
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none GxEPD2/GDEQ0426T82/Demo
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=ble_silabs ble_scan
 ```
@@ -44,7 +41,7 @@ arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=ble_silabs bl
 Non-Matter sketches compile in a few seconds; Matter builds are far slower.
 
 Upload defaults to `openocd` over SWD/CMSIS-DAP, i.e. it expects a debug probe
-(see `../XIAO_Debug_Mate/`). To flash over the USB serial port instead, use the
+(e.g. XIAO Debug Mate). To flash over the USB serial port instead, use the
 Simplicity Commander programmer:
 
 ```sh
@@ -136,7 +133,7 @@ the same six pins. **GxEPD2 1.6.9 has no 240x360 panel class at all** — only
   panel wants the black plane uninverted, and the init code needs an explicit
   `0x61` TRES entry that Adafruit's own UC8253 panel does not.
 
-Both were ported from `../../AdafruitFeatherThinkInk/`. Three Silicon Labs core
+Both were ported from the Adafruit Feather ThinkInk examples. Three Silicon Labs core
 facts shaped the port and are worth knowing before touching either:
 
 - `SPI` (not `SPI1`) is the EPD bus, and no remap is needed or possible — the
