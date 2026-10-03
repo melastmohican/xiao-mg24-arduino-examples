@@ -1,0 +1,171 @@
+#include "Display_EPD_W21_spi.h"
+#include "Display_EPD_W21.h"
+
+// Busy function with 40s timeout: SSD2681 BUSY pin is active LOW (0 = busy, 1 = ready/idle).
+void lcd_chkstatus(void)
+{
+  unsigned long start = millis();
+  while (isEPD_W21_BUSY == 0)
+  {
+    if (millis() - start > 40000) {
+      Serial.println(F("GDEM0154F61H BUSY timeout!"));
+      break;
+    }
+    delay(5);
+  }
+}
+
+void EPD_init(void)
+{
+  delay(100);         // Module reset delay
+  EPD_W21_RST_0;      // Module reset
+  delay(50);
+  EPD_W21_RST_1;
+  delay(50);
+
+  EPD_W21_WriteCMD(0xE9);
+  EPD_W21_WriteDATA(0x01);
+
+  EPD_W21_WriteCMD(0x04);
+  lcd_chkstatus();
+}
+
+// Fast full screen update initialization
+void EPD_init_Fast(void)
+{
+  delay(20);
+  EPD_W21_RST_0;      // Module reset
+  delay(50);
+  EPD_W21_RST_1;
+  delay(50);
+
+  EPD_W21_WriteCMD(0xE9);
+  EPD_W21_WriteDATA(0x01);
+
+  EPD_W21_WriteCMD(0xEF);
+  EPD_W21_WriteDATA(0x01);
+
+  EPD_W21_WriteCMD(0xF6);
+  EPD_W21_WriteDATA(0x24);
+
+  EPD_W21_WriteCMD(0xEF);
+  EPD_W21_WriteDATA(0x00);
+
+  EPD_W21_WriteCMD(0xE0);
+  EPD_W21_WriteDATA(0x02);
+
+  EPD_W21_WriteCMD(0xE6);
+  EPD_W21_WriteDATA(92);
+
+  EPD_W21_WriteCMD(0xA5);
+  lcd_chkstatus();
+
+  EPD_W21_WriteCMD(0x04);
+  lcd_chkstatus();
+}
+
+void EPD_sleep(void)
+{
+  EPD_W21_WriteCMD(0x02); // Power off
+  EPD_W21_WriteDATA(0x00);
+  lcd_chkstatus();
+
+  EPD_W21_WriteCMD(0x07); // Deep sleep
+  EPD_W21_WriteDATA(0xA5);
+}
+
+void EPD_update(void)
+{
+  EPD_W21_WriteCMD(0x12); // Display update control
+  EPD_W21_WriteDATA(0x00);
+  lcd_chkstatus();
+}
+
+void Display_All_Black(void)
+{
+  unsigned long i;
+  EPD_W21_WriteCMD(0x10);
+  for (i = 0; i < ALLSCREEN_BYTES; i++) {
+    EPD_W21_WriteDATA(0x00);
+  }
+  EPD_update();
+}
+
+void Display_All_White(void)
+{
+  unsigned long i;
+  EPD_W21_WriteCMD(0x10);
+  for (i = 0; i < ALLSCREEN_BYTES; i++) {
+    EPD_W21_WriteDATA(0x55);
+  }
+  EPD_update();
+}
+
+void Display_All_Yellow(void)
+{
+  unsigned long i;
+  EPD_W21_WriteCMD(0x10);
+  for (i = 0; i < ALLSCREEN_BYTES; i++) {
+    EPD_W21_WriteDATA(0xAA);
+  }
+  EPD_update();
+}
+
+void Display_All_Red(void)
+{
+  unsigned long i;
+  EPD_W21_WriteCMD(0x10);
+  for (i = 0; i < ALLSCREEN_BYTES; i++) {
+    EPD_W21_WriteDATA(0xFF);
+  }
+  EPD_update();
+}
+
+static unsigned char Color_get(unsigned char color)
+{
+  unsigned char datas = white;
+  switch (color)
+  {
+    case 0x00:
+      datas = white;
+      break;
+    case 0x01:
+      datas = yellow;
+      break;
+    case 0x02:
+      datas = red;
+      break;
+    case 0x03:
+      datas = black;
+      break;
+    default:
+      break;
+  }
+  return datas;
+}
+
+void PIC_display(const unsigned char* picData)
+{
+  unsigned int i, j;
+  unsigned char temp1;
+  unsigned char data_H1, data_H2, data_L1, data_L2, data;
+
+  EPD_W21_WriteCMD(0x10);
+  for (i = 0; i < Gate_BITS; i++)
+  {
+    for (j = 0; j < Source_BITS / 4; j++)
+    {
+      temp1 = pgm_read_byte(&picData[i * Source_BITS / 4 + j]);
+
+      data_H1 = Color_get((temp1 >> 6) & 0x03) << 6;
+      data_H2 = Color_get((temp1 >> 4) & 0x03) << 4;
+      data_L1 = Color_get((temp1 >> 2) & 0x03) << 2;
+      data_L2 = Color_get(temp1 & 0x03);
+
+      data = data_H1 | data_H2 | data_L1 | data_L2;
+      EPD_W21_WriteDATA(data);
+    }
+  }
+
+  EPD_update();
+}

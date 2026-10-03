@@ -34,6 +34,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEM0154F51H/` | `protocol_stack=none` |
 | `Waveshare_3in7g/`, `good_display/GDEM037F51/`, `GxEPD2/GDEM037F51/Demo/` | `protocol_stack=none` |
 | `Adafruit_EPD/XIAO_GDEW0215T12/`, `GxEPD2/GDEW0215T12/Demo/`, `good_display/GDEW0215T12/` | `protocol_stack=none` |
+| `good_display/GDEM0154F61H/`, `GxEPD2/GDEM0154F61H/Demo/`, `Adafruit_EPD/XIAO_GDEM0154F61H/` | `protocol_stack=none` |
 
 ```sh
 # from repository root
@@ -70,10 +71,11 @@ the `sl_bt_on_event()` callback that the Silabs BLE stack invokes.
 commissioning credentials when re-pairing fails, then re-flash the real sketch.
 
 **GxEPD2 ePaper demos** (`GxEPD2/<PANEL>/Demo/Demo.ino`) target the *Seeed Studio
-ePaper Driver Board for XIAO v2*. Nine panels: `GDEM0213B74` (2.13" BW),
+ePaper Driver Board for XIAO v2*. Eleven panels: `GDEM0213B74` (2.13" BW),
 `GDEY0266T90` (2.66" BW 152x296), `GDEY037T03` (3.7" BW), `GDEQ0426T82` (4.26" BW 800x480),
 `GDEH0154Z90` (1.54" 3-color), `GDEY0266Z90` (2.66" 3-color 152x296), `GDEY0213F51` (2.13" 4-color),
-`GDEM0154F51H` (1.54" 4-color 200x200), and `GDEM037F51` (3.7" 4-color 240x416).
+`GDEM0154F51H` (1.54" 4-color 200x200), `GDEM037F51` (3.7" 4-color 240x416),
+`GDEW0215T12` (2.15" BW 208x112), and `GDEM0154F61H` (1.54" 4-color 200x200).
 
 ## The GxEPD2 demo template
 
@@ -302,6 +304,20 @@ Hardware and controller specifics:
 - **BUSY is active LOW** on UC8151D (0 = busy, 1 = ready/idle).
 - **Pixel packing**: 1 bit per pixel (0 = Black, 1 = White), 8 pixels per byte (14 bytes/row, 2,912 bytes total).
 - **Refresh timing**: Full refresh takes ~3s; partial refresh takes ~0.5s without full-screen flicker.
+
+## The Good Display 1.54" (4-color) / GDEM0154F61H sketches
+
+The 1.54-inch 4-color e-Paper panel: 200x200, SSD2681 controller, 4 native colors (Black, White, Yellow, Red) at 2 bits per pixel (Good Display `GDEM0154F61H`, FPC `FPC-8101`). Same Seeed driver board, same six pins (`RST D0`, `CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered by three independent driver paths:
+
+- `good_display/GDEM0154F61H/`: Good Display official vendor sample adapted for the XIAO MG24, demonstrating full refresh (~20s), fast update mode (~12-15s), and color fills.
+- `GxEPD2/GDEM0154F61H/Demo/`: In-sketch `GxEPD2_154c_GDEM0154F61H` panel class subclassing `GxEPD2_EPD` with `<GxEPD2_4C.h>`, running the standard 6-screen 4-color demo suite. Fits in a single 10KB RAM buffer on the XIAO MG24.
+- `Adafruit_EPD/XIAO_GDEM0154F61H/`: In-sketch `ThinkInk_154_Quadcolor_GDEM0154F61H` panel class subclassing `Adafruit_JD79661`. Injects SSD2681 initialization commands (`0xE9 0x01`, `0x04`), testing typography, geometric shapes, and 4-color swatches.
+
+Hardware and controller specifics:
+- **BUSY is active LOW** on SSD2681 (0 = busy, 1 = ready/idle).
+- **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red), 4 pixels per byte (50 bytes/row, 10,000 bytes total).
+- **Refresh timing**: Full refresh takes ~20s; fast refresh takes ~12-15s. No partial refresh.
+
 
 
 

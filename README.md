@@ -4,7 +4,7 @@
 
 Arduino sketches and display drivers for the Seeed Studio XIAO MG24 (Sense), powered by the Silicon Labs EFR32MG24 microcontroller (ARM Cortex-M33, 2.4 GHz multi-protocol radio for BLE 5.4, Matter, and Thread).
 
-This repository contains standalone test sketches, protocol examples, and e-paper display drivers targeting the Seeed Studio ePaper Driver Board for XIAO v2 across multiple display controllers (SSD1680, UC8253, JD79660, IST7163, UC8151D).
+This repository contains standalone test sketches, protocol examples, and e-paper display drivers targeting the Seeed Studio ePaper Driver Board for XIAO v2 across multiple display controllers (SSD1680, UC8253, JD79660, IST7163, UC8151D, SSD2681).
 
 ## Hardware Setup
 
@@ -63,6 +63,7 @@ Standardized 6-page demonstration suites (splash, palette, typography, geometry,
 - `GxEPD2/GDEM0154F51H/Demo/`: 1.54 inch 4-color Red/Yellow/Black/White (200x200, JD79660)
 - `GxEPD2/GDEM037F51/Demo/`: 3.7 inch 4-color Red/Yellow/Black/White (240x416, IST7163). Dashboard text is right-aligned and shortened to fit the 240 px width.
 - `GxEPD2/GDEW0215T12/Demo/`: 2.15 inch Black and White (208x112, UC8151D) with custom in-sketch panel driver class for GDEW0215T12 (formerly GDEW0215T11).
+- `GxEPD2/GDEM0154F61H/Demo/`: 1.54 inch 4-color Red/Yellow/Black/White (200x200, SSD2681) with custom in-sketch panel driver class.
 
 ### 3. Adafruit_EPD Driver Implementations (`Adafruit_EPD/`)
 
@@ -71,6 +72,7 @@ Standardized 6-page demonstration suites (splash, palette, typography, geometry,
 - `Adafruit_EPD/XIAO_Waveshare_2in66/`: Waveshare 2.66 inch monochrome (152x296, SSD1680) supporting 1-bit monochrome and 4-level grayscale via `ThinkInk_266_Grayscale4_MFGN`.
 - `Adafruit_EPD/XIAO_Waveshare_1in54g/`: Waveshare 1.54 inch 4-color (200x200, JD79660) subclassing `Adafruit_JD79661`.
 - `Adafruit_EPD/XIAO_GDEW0215T12/`: Good Display 2.15 inch monochrome (208x112, UC8151D) with in-sketch panel class and partial refresh, for GDEW0215T12 (formerly GDEW0215T11).
+- `Adafruit_EPD/XIAO_GDEM0154F61H/`: Good Display 1.54 inch 4-color (200x200, SSD2681) subclassing `Adafruit_JD79661`.
 
 ### 4. Waveshare Vendored Drivers (`Waveshare_*/`)
 
@@ -91,6 +93,7 @@ Low-level vendor examples demonstrating specific controller waveform modes:
 - `good_display/GDEM0154F51H/`: 1.54 inch 4-color sample testing full refresh (20s) and fast update mode (12s to 15s).
 - `good_display/GDEM037F51/`: 3.7 inch 4-color sample testing full refresh (20s) and fast update mode (12s to 15s).
 - `good_display/GDEW0215T12/`: 2.15 inch monochrome sample testing full refresh (3s) and partial refresh clock (0.5s), for GDEW0215T12 (formerly GDEW0215T11).
+- `good_display/GDEM0154F61H/`: 1.54 inch 4-color sample (SSD2681) testing full refresh (20s) and fast update mode (12s to 15s).
 
 ## Build and Flash Examples
 
@@ -126,8 +129,9 @@ arduino-cli monitor -p /dev/cu.usbmodemXXXX -c baudrate=115200
 
 ## Hardware and Controller Notes
 
-- BUSY Pin Polarity: The SSD1680 controller asserts BUSY high when updating (1 = busy, 0 = idle). The UC8253, JD79660, IST7163, and UC8151D controllers assert BUSY low (0 = busy, 1 = idle).
+- BUSY Pin Polarity: The SSD1680 controller asserts BUSY high when updating (1 = busy, 0 = idle). The UC8253, JD79660, IST7163, UC8151D, and SSD2681 controllers assert BUSY low (0 = busy, 1 = idle).
 - Panel Orientation: 2.66 inch panels (SSD1680) have the FPC connector positioned so that standard coordinate zero sits at the opposite corner. Each driver applies a 180-degree rotation fix (`DEMO_ROTATION 3` in GxEPD2, `setRotation(2)` in Adafruit_EPD, `EPD_INIT_180` in Good Display, and raster reversal in Waveshare C drivers).
 - 2.15" GDEW0215T12 (UC8151D): Resolution is 208x112 monochrome (14 bytes per gate row across 208 gates = 2,912 bytes total). In Adafruit_EPD, rotation 0 provides the native landscape orientation, and partial refresh uses the 0.5s differential waveform LUT across the full 2,912-byte framebuffer without full-screen flicker.
+- 1.54" GDEM0154F61H (SSD2681): Resolution is 200x200 with 4 native colors (Black, White, Yellow, Red) at 2 bits per pixel (50 bytes per row, 10,000 bytes total). Full refresh takes ~20s and fast refresh takes ~12-15s. Supported across Good Display vendor code, in-sketch GxEPD2 panel driver (`GxEPD2_154c_GDEM0154F61H`) with `<GxEPD2_4C.h>`, and an in-sketch Adafruit_EPD subclass (`ThinkInk_154_Quadcolor_GDEM0154F61H`) deriving from `Adafruit_JD79661`.
 - SPI Mutex Guard: In the Silicon Labs Arduino core, `SilabsSPI::beginTransaction()` acquires a FreeRTOS mutex. Re-calling `beginTransaction()` without `endTransaction()` can halt execution.
 - Tricolor Refresh Times: Full refresh on tricolor panels takes roughly 20 seconds because of the physical electrophoretic requirements of red pigment particles. Fast and partial updates on tricolor panels still require full-screen cycling.
