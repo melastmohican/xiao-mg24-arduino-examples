@@ -33,6 +33,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `Waveshare_1in54g/`, `Adafruit_EPD/XIAO_Waveshare_1in54g/` | `protocol_stack=none` |
 | `good_display/GDEM0154F51H/` | `protocol_stack=none` |
 | `Waveshare_3in7g/`, `good_display/GDEM037F51/`, `GxEPD2/GDEM037F51/Demo/` | `protocol_stack=none` |
+| `Adafruit_EPD/XIAO_GDEW0215T12/`, `GxEPD2/GDEW0215T12/Demo/`, `good_display/GDEW0215T12/` | `protocol_stack=none` |
 
 ```sh
 # from repository root
@@ -288,5 +289,19 @@ Hardware and controller specifics:
 - **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red),
   4 pixels per byte (60 bytes/row, 24,960 bytes total).
 - **Refresh timing**: Full refresh takes ~20s; fast refresh takes ~12-15s. No partial refresh.
+
+## The Good Display 2.15" (monochrome) / GDEW0215T12 (GDEW0215T11) sketches
+
+The 2.15-inch monochrome e-Paper panel: 208x112, UC8151D controller, 1-bit monochrome black & white with partial refresh support (Good Display `GDEW0215T12`, formerly `GDEW0215T11`, FPC `WFT0215CZA4`). Same Seeed driver board, same six pins (`RST D0`, `CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered by three independent driver paths:
+
+- `Adafruit_EPD/XIAO_GDEW0215T12/`: In-sketch `ThinkInk_215_Mono_GDEW0215T12` panel class subclassing `Adafruit_UC8151D`. Injects exact 208x112 resolution setting (`0x61`) and LUT initializations, testing typography, concentric geometry, and partial refresh bounding box updates.
+- `GxEPD2/GDEW0215T12/Demo/`: In-sketch `GxEPD2_215_GDEW0215T12` panel class subclassing `GxEPD2_EPD` with `<GxEPD2_BW.h>`, running the standard 6-screen monochrome demo suite with `fillDitheredRect()`. Fits in a single 2912-byte RAM buffer on the XIAO MG24.
+- `good_display/GDEW0215T12/`: Good Display official vendor sample adapted for the XIAO MG24, demonstrating full refresh (3s) and partial refresh clock mode (0.5s).
+
+Hardware and controller specifics:
+- **BUSY is active LOW** on UC8151D (0 = busy, 1 = ready/idle).
+- **Pixel packing**: 1 bit per pixel (0 = Black, 1 = White), 8 pixels per byte (14 bytes/row, 2,912 bytes total).
+- **Refresh timing**: Full refresh takes ~3s; partial refresh takes ~0.5s without full-screen flicker.
+
 
 
