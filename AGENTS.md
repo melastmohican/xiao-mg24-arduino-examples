@@ -333,7 +333,7 @@ Hardware and controller specifics:
 - **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red), 4 pixels per byte. RAM is 128 pixels wide (122 visible): 32 bytes/row, 250 rows, 8,000 bytes total.
 - **Init**: after reset only `0xE9 0x01` and `0x04` (POWER_ON) are sent; waveform and panel settings come from OTP. Fast init prepends `0xE0 0x02`, `0xE6 90`, `0xA5`. Re-init is required before every full update. Sleep is `0x02 0x00` then `0x07 0xA5`.
 - **Refresh timing**: Full refresh takes ~11s. No partial refresh.
-- **Orientation**: all three sketches are compile-verified only; the 180 degree question (`DEMO_ROTATION` in the GxEPD2 and Adafruit sketches) has not been checked on hardware.
+- **Orientation**: all three sketches are verified on hardware with the defaults (`DEMO_ROTATION 1` in the GxEPD2 and Adafruit sketches, no correction in the vendor sketch).
 
 ## The Good Display 2.66" (monochrome, high resolution) / GDEY0266T90H sketches
 
@@ -349,4 +349,4 @@ Hardware and controller specifics:
 - **RAM mapping**: Good Display's sample uses data entry `0x01` (x increase, y decrease) with images pre-flipped for it; `EPD_HW_Init_180()` uses `0x02`. The GxEPD2 class uses the library's `0x03` instead: `0x01` with a reversed y window showed GxEPD2's raster mirrored on hardware.
 - **Update values**: full `0x22 0xF4` (GxEPD2 class uses `0xF7`), fast `0xC7` after loading temperature `0x6E` (fast 1) or `0x5A` (fast 2), partial `0x1C`. Deep sleep `0x10 0x01`. Re-init before every full refresh.
 - **Refresh timing**: full ~2s, fast 1 ~1.5s, fast 2 ~1.0s, partial ~0.4s.
-- **Orientation**: Unlike the GDEY0266T90, this panel does not need the 180 degree correction in the GxEPD2 demo: `DEMO_ROTATION` is 1 (checked on hardware), and Adafruit uses rotation 2. `EPD_INIT_180` in the vendor sketch is unverified.
+- **Orientation**: all three sketches are verified on hardware. Unlike the GDEY0266T90, this panel does not need the 180 degree correction in the GxEPD2 demo: `DEMO_ROTATION` is 1 (3 showed it upside down), Adafruit uses rotation 2, and the vendor sketch defaults to `EPD_INIT_180 1`.

@@ -36,8 +36,8 @@
 #define EPD_SPI     &SPI
 
 // Rotation 2, applied after begin(): the 2.66" panels in this repo have their native
-// origin at the corner opposite the one content should start from. Assumed the same
-// here, not yet checked on hardware. Use 0 if the image comes out upside down.
+// origin at the corner opposite the one content should start from. Same here, checked
+// on hardware. Use 0 if the image comes out upside down.
 #define DEMO_ROTATION 2
 
 // Mono init, expressed as an Adafruit_EPD command list: {command, arg_count, args...},
