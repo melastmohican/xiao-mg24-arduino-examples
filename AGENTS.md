@@ -35,6 +35,8 @@ radio stack is compiled into the core, not linked from the sketch:
 | `Waveshare_3in7g/`, `good_display/GDEM037F51/`, `GxEPD2/GDEM037F51/Demo/` | `protocol_stack=none` |
 | `Adafruit_EPD/XIAO_GDEW0215T12/`, `GxEPD2/GDEW0215T12/Demo/`, `good_display/GDEW0215T12/` | `protocol_stack=none` |
 | `good_display/GDEM0154F61H/`, `GxEPD2/GDEM0154F61H/Demo/`, `Adafruit_EPD/XIAO_GDEM0154F61H/` | `protocol_stack=none` |
+| `good_display/GDEY0213F52/`, `GxEPD2/GDEY0213F52/Demo/`, `Adafruit_EPD/XIAO_GDEY0213F52/` | `protocol_stack=none` |
+| `good_display/GDEY0266T90H/`, `GxEPD2/GDEY0266T90H/Demo/`, `Adafruit_EPD/XIAO_GDEY0266T90H/` | `protocol_stack=none` |
 
 ```sh
 # from repository root
@@ -75,7 +77,7 @@ ePaper Driver Board for XIAO v2*. Eleven panels: `GDEM0213B74` (2.13" BW),
 `GDEY0266T90` (2.66" BW 152x296), `GDEY037T03` (3.7" BW), `GDEQ0426T82` (4.26" BW 800x480),
 `GDEH0154Z90` (1.54" 3-color), `GDEY0266Z90` (2.66" 3-color 152x296), `GDEY0213F51` (2.13" 4-color),
 `GDEM0154F51H` (1.54" 4-color 200x200), `GDEM037F51` (3.7" 4-color 240x416),
-`GDEW0215T12` (2.15" BW 208x112), and `GDEM0154F61H` (1.54" 4-color 200x200).
+`GDEW0215T12` (2.15" BW 208x112), `GDEM0154F61H` (1.54" 4-color 200x200), `GDEY0213F52` (2.13" 4-color 250x122), and `GDEY0266T90H` (2.66" BW 360x184).
 
 ## The GxEPD2 demo template
 
@@ -318,6 +320,33 @@ Hardware and controller specifics:
 - **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red), 4 pixels per byte (50 bytes/row, 10,000 bytes total).
 - **Refresh timing**: Full refresh takes ~20s; fast refresh takes ~12-15s. No partial refresh.
 
+## The Good Display 2.13" (4-color) / GDEY0213F52 sketches
 
+The 2.13-inch 4-color e-Paper panel: 250x122, JD79676A controller, 4 native colors (Black, White, Yellow, Red) at 2 bits per pixel (Good Display `GDEY0213F52`, FPC `FPC-J002`, DESPI-C02 adapter pinout). Not to be confused with `GDEY0213F51` (JD79661, stock GxEPD2 class) which is the same size. Same Seeed driver board, same six pins (`RST D0`, `CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered by three independent driver paths; GxEPD2 and Adafruit_EPD have no F52 support, so both classes live in-sketch:
 
+- `good_display/GDEY0213F52/`: Good Display official vendor sample (`AU-GDEY0213F52` V2.0) adapted for the XIAO MG24, demonstrating full refresh (~11s), fast update mode (`gImage_2`), and color fills.
+- `GxEPD2/GDEY0213F52/Demo/`: In-sketch `GxEPD2_213c_GDEY0213F52` panel class subclassing `GxEPD2_EPD` with `<GxEPD2_4C.h>`, running the standard 6-screen 4-color suite. Reports `GxEPD2::GDEY0213F51` as its panel enum. Single 8KB RAM buffer.
+- `Adafruit_EPD/XIAO_GDEY0213F52/`: In-sketch `ThinkInk_213_Quadcolor_GDEY0213F52` panel class subclassing `Adafruit_JD79661` (122x250, width padded to 128 by the library) with the short init (`0xE9 0x01`, `0x04`) instead of Adafruit's JD79661 init.
 
+Hardware and controller specifics:
+- **BUSY is active LOW** on JD79676A (0 = busy, 1 = ready/idle).
+- **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red), 4 pixels per byte. RAM is 128 pixels wide (122 visible): 32 bytes/row, 250 rows, 8,000 bytes total.
+- **Init**: after reset only `0xE9 0x01` and `0x04` (POWER_ON) are sent; waveform and panel settings come from OTP. Fast init prepends `0xE0 0x02`, `0xE6 90`, `0xA5`. Re-init is required before every full update. Sleep is `0x02 0x00` then `0x07 0xA5`.
+- **Refresh timing**: Full refresh takes ~11s. No partial refresh.
+- **Orientation**: all three sketches are compile-verified only; the 180 degree question (`DEMO_ROTATION` in the GxEPD2 and Adafruit sketches) has not been checked on hardware.
+
+## The Good Display 2.66" (monochrome, high resolution) / GDEY0266T90H sketches
+
+The higher-resolution sibling of the GDEY0266T90: 360x184, SSD1685 controller, black/white with full, fast and partial refresh (Good Display `GDEY0266T90H`, FPC `FPC-H011`). Not to be confused with `GDEY0266T90` (152x296, SSD1680, stock GxEPD2 class) or the 2.9" `GDEY029T71H` (also SSD1685, 168x384). Same Seeed driver board, same six pins. GxEPD2 and Adafruit_EPD have no GDEY0266T90H support, so both classes live in-sketch. Three independent driver paths:
+
+- `good_display/GDEY0266T90H/`: Good Display official vendor sample (`AU-GDEY0266T90H-2FP-20230915`) adapted for the XIAO MG24: full refresh, fast refresh 1 and 2, partial-refresh clock, `EPD_INIT_180` knob. The vendor sample ships only `gImage_1` (no `gImage_2`), unlike the T90.
+- `GxEPD2/GDEY0266T90H/Demo/`: In-sketch `GxEPD2_266_GDEY0266T90H` class with `<GxEPD2_BW.h>`, derived from the library's `GxEPD2_290_GDEY029T71H` (same SSD1685 command set) with this panel's geometry. Standard six-screen demo, single 8,280-byte page buffer.
+- `Adafruit_EPD/XIAO_GDEY0266T90H/`: In-sketch `ThinkInk_266_Mono_GDEY0266T90H` subclassing `Adafruit_SSD1680` with `(360, 184)` long axis first, `_xram_offset = 0`, and a mono init table.
+
+Hardware and controller specifics:
+- **BUSY is active HIGH** (1 = busy), like the SSD1680 and unlike the 4-color panels in this repo.
+- **RAM**: 184 pixels wide (23 bytes/row) by 360 rows, 8,280 bytes. 1 bit per pixel, 0 = black, 1 = white. Command `0x24` is the current image, `0x26` the previous one (vendor full refresh writes `0x00` to it).
+- **RAM mapping**: Good Display's sample uses data entry `0x01` (x increase, y decrease) with images pre-flipped for it; `EPD_HW_Init_180()` uses `0x02`. The GxEPD2 class uses the library's `0x03` instead: `0x01` with a reversed y window showed GxEPD2's raster mirrored on hardware.
+- **Update values**: full `0x22 0xF4` (GxEPD2 class uses `0xF7`), fast `0xC7` after loading temperature `0x6E` (fast 1) or `0x5A` (fast 2), partial `0x1C`. Deep sleep `0x10 0x01`. Re-init before every full refresh.
+- **Refresh timing**: full ~2s, fast 1 ~1.5s, fast 2 ~1.0s, partial ~0.4s.
+- **Orientation**: Unlike the GDEY0266T90, this panel does not need the 180 degree correction in the GxEPD2 demo: `DEMO_ROTATION` is 1 (checked on hardware), and Adafruit uses rotation 2. `EPD_INIT_180` in the vendor sketch is unverified.
