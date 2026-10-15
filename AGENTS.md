@@ -37,6 +37,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEM0154F61H/`, `GxEPD2/GDEM0154F61H/Demo/`, `Adafruit_EPD/XIAO_GDEM0154F61H/` | `protocol_stack=none` |
 | `good_display/GDEY0213F52/`, `GxEPD2/GDEY0213F52/Demo/`, `Adafruit_EPD/XIAO_GDEY0213F52/` | `protocol_stack=none` |
 | `good_display/GDEY0266T90H/`, `GxEPD2/GDEY0266T90H/Demo/`, `Adafruit_EPD/XIAO_GDEY0266T90H/` | `protocol_stack=none` |
+| `good_display/GDEY037T03_4G/` | `protocol_stack=none` |
 
 ```sh
 # from repository root

@@ -96,6 +96,9 @@ Low-level vendor examples demonstrating specific controller waveform modes:
 - `good_display/GDEY0266T90/`: 2.66 inch monochrome sample with standard full refresh (2s), fast refresh (1.0s to 1.5s), and partial refresh clock demo (0.5s).
 - `good_display/GDEM0154F51H/`: 1.54 inch 4-color sample testing full refresh (20s) and fast update mode (12s to 15s).
 - `good_display/GDEM037F51/`: 3.7 inch 4-color sample testing full refresh (20s) and fast update mode (12s to 15s).
+- `good_display/GDEY037T03_4G/`: 3.7 inch monochrome (240x416, UC8253) 4-gray check using Good Display's `GDEY037T03-FP4G` sample. Clears, shows a monochrome image, then the 4-gray image, so you can tell whether a given glass renders real gray.
+  - **Source:** Good Display's ESP32 sample for GDEY037T03, `A32-GDEY037T03.rar` from <https://www.good-display.com/product/437.html> (direct link: <https://v4.cecdn.yun300.cn/100001_1909185148/A32-GDEY037T03.rar>). The archive's inner folder is `A32-GDEY037T03-FP4G-20240815`. "FP4G" is a folder tag, not a part number. `Display_EPD_W21.cpp`, `Display_EPD_W21.h` and `Ap_29demo.h` are Good Display's, unmodified. `Display_EPD_W21_spi.*` and the `.ino` are adapted for the XIAO MG24 pins.
+  - **Result on the Adafruit 6395 (ZJY240416-037BAAMFGN, 15 Oct 2026):** the 4-gray image renders as plain black and white. Good Display's own GDEY037T03 spec (25.01.08) and the ZJY spec both list "2 Grey Level". The demo's `EPD_Init_4G` only selects a gray waveform if the glass's OTP contains one.
 - `good_display/GDEW0215T12/`: 2.15 inch monochrome sample testing full refresh (3s) and partial refresh clock (0.5s), for GDEW0215T12 (formerly GDEW0215T11).
 - `good_display/GDEM0154F61H/`: 1.54 inch 4-color sample (SSD2681) testing full refresh (20s) and fast update mode (12s to 15s).
 - `good_display/GDEY0213F52/`: 2.13 inch 4-color sample (JD79676A) testing full refresh (11s) and fast update mode.
