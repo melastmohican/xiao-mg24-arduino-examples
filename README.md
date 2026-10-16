@@ -57,6 +57,7 @@ Standardized 6-page demonstration suites (splash, palette, typography, geometry,
 - `GxEPD2/GDEY0266T90/Demo/`: 2.66 inch Black and White (152x296, SSD1680)
 - `GxEPD2/GDEY037T03/Demo/`: 3.7 inch Black and White (280x480)
 - `GxEPD2/GDEQ0426T82/Demo/`: 4.26 inch Black and White (800x480, segmented buffer capped at 64 KB)
+- `GxEPD2/GDEQ0426T82/MacPaint/`: Port of upiir's Seeed ePaper partial update handwriting demo. Renders a centered 640x480 MacPaint canvas on the 800x480 panel, followed by real-time cursive handwriting partial updates.
 - `GxEPD2/GDEH0154Z90/Demo/`: 1.54 inch 3-color Red/Black/White (200x200)
 - `GxEPD2/GDEY0266Z90/Demo/`: 2.66 inch 3-color Red/Black/White (152x296)
 - `GxEPD2/GDEY0213F51/Demo/`: 2.13 inch 4-color Red/Yellow/Black/White (122x250)
@@ -77,6 +78,7 @@ Standardized 6-page demonstration suites (splash, palette, typography, geometry,
 - `Adafruit_EPD/XIAO_GDEM0154F61H/`: Good Display 1.54 inch 4-color (200x200, SSD2681) subclassing `Adafruit_JD79661`.
 - `Adafruit_EPD/XIAO_GDEY0213F52/`: Good Display 2.13 inch 4-color (250x122, JD79676A) subclassing `Adafruit_JD79661` with the short Good Display init.
 - `Adafruit_EPD/XIAO_GDEY0266T90H/`: Good Display 2.66 inch Black and White (360x184, SSD1685) subclassing `Adafruit_SSD1680` with a mono init table.
+- `Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint/`: Evaluation sketch running the identical MacPaint handwriting animation using `ThinkInk_426_Grayscale4_GDEQ`. Clean solid strokes, but runs at ~1.5s per dot because `Adafruit_SSD1677` lacks windowed SPI transmission and retransmits the full 48 KB buffer twice over SPI per point.
 
 ### 4. Waveshare Vendored Drivers (`Waveshare_*/`)
 
@@ -92,6 +94,7 @@ Self-contained C drivers adapted from Waveshare reference implementations:
 
 Low-level vendor examples demonstrating specific controller waveform modes:
 
+- `good_display/GDEQ0426T82_MacPaint/`: Custom bare-metal register driver for the 4.26 inch panel (SSD1677). Best overall performer: ~0.45s per point, zero ghosting, full 48 KB MCU canvas buffering with 18-byte partial window register streaming, and dual RAM (`0x24`/`0x26`) synchronization.
 - `good_display/GDEY0266Z90/`: 2.66 inch tricolor sample with fast and partial refresh routines.
 - `good_display/GDEY0266T90/`: 2.66 inch monochrome sample with standard full refresh (2s), fast refresh (1.0s to 1.5s), and partial refresh clock demo (0.5s).
 - `good_display/GDEM0154F51H/`: 1.54 inch 4-color sample testing full refresh (20s) and fast update mode (12s to 15s).

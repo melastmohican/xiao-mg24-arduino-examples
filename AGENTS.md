@@ -38,6 +38,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEY0213F52/`, `GxEPD2/GDEY0213F52/Demo/`, `Adafruit_EPD/XIAO_GDEY0213F52/` | `protocol_stack=none` |
 | `good_display/GDEY0266T90H/`, `GxEPD2/GDEY0266T90H/Demo/`, `Adafruit_EPD/XIAO_GDEY0266T90H/` | `protocol_stack=none` |
 | `good_display/GDEY037T03_4G/` | `protocol_stack=none` |
+| `GxEPD2/GDEQ0426T82/MacPaint/`, `Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint/`, `good_display/GDEQ0426T82_MacPaint/` | `protocol_stack=none` |
 
 ```sh
 # from repository root
@@ -351,3 +352,22 @@ Hardware and controller specifics:
 - **Update values**: full `0x22 0xF4` (GxEPD2 class uses `0xF7`), fast `0xC7` after loading temperature `0x6E` (fast 1) or `0x5A` (fast 2), partial `0x1C`. Deep sleep `0x10 0x01`. Re-init before every full refresh.
 - **Refresh timing**: full ~2s, fast 1 ~1.5s, fast 2 ~1.0s, partial ~0.4s.
 - **Orientation**: all three sketches are verified on hardware. Unlike the GDEY0266T90, this panel does not need the 180 degree correction in the GxEPD2 demo: `DEMO_ROTATION` is 1 (3 showed it upside down), Adafruit uses rotation 2, and the vendor sketch defaults to `EPD_INIT_180 1`.
+
+## The Good Display 4.26" (monochrome) / GDEQ0426T82 sketches
+
+The large 4.26-inch monochrome e-Paper panel: 800x480, SSD1677 controller, 1-bit monochrome black and white with fast full refresh and differential partial refresh (Good Display `GDEQ0426T82`). Same Seeed driver board, same six pins (`RST D0`, `CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered across three driver paths:
+
+- `GxEPD2/GDEQ0426T82/Demo/`: Standard six-screen demo suite using paged buffer capped at 64 KB.
+- `GxEPD2/GDEQ0426T82/MacPaint/`: Port of upiir's Seeed ePaper partial update handwriting demo. Renders a centered 640x480 MacPaint interface bitmap (`macos_800x480px_paint.png`), then animates cursive handwriting inside the canvas via `display.setPartialWindow()` differential updates.
+- `Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint/`: Port of the same MacPaint handwriting demo using `ThinkInk_426_Grayscale4_GDEQ` to benchmark Adafruit_EPD. In Adafruit's SSD1677 driver, `displayPartial()` retransmits the full 48 KB buffer twice over SPI per dot (~1.5s per point).
+- `good_display/GDEQ0426T82_MacPaint/`: Port of the same MacPaint handwriting demo using direct Good Display bare-metal register commands (not official vendor package). Operates on a 48 KB RAM buffer and streams 18-byte partial windows to SSD1677 registers (`0x44`/`0x45`/`0x4E`/`0x4F`) with ~0.45s update times.
+
+Hardware and controller specifics:
+- **BUSY is active HIGH** (1 = busy, 0 = idle/ready).
+- **RAM**: 800 pixels wide (100 bytes/row) by 480 rows, 48,000 bytes. 1 bit per pixel, 0 = black, 1 = white (SSD1677 panel polarity). Command `0x24` is current RAM, `0x26` is previous differential RAM.
+- **Refresh timing**: Full refresh takes ~1.6s (fast full OTP ~1.0s); partial differential refresh takes ~0.45s to 0.5s.
+
+Driver architecture and partial update comparison:
+- **Good Display (`good_display/GDEQ0426T82_MacPaint`)**: Best performance (~0.45s/dot, zero ghosting). Maintains a persistent 48 KB canvas in MCU RAM, writes only the 18-byte bounding box to SSD1677 window registers (`0x44`/`0x45`/`0x4E`/`0x4F`), and syncs both current (`0x24`) and differential (`0x26`) RAM. Requires `EPD_FLIP_Y 1` (Y-inversion) for panel gate alignment.
+- **Adafruit_EPD (`Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint`)**: Accurate but slow (~1.5s/dot). `Adafruit_SSD1677` lacks windowed SPI streaming, so `displayPartial()` retransmits the full 48,000-byte frame buffer twice over SPI per point (96 KB total) with soft reset and analog power cycling. High stroke quality, but fundamentally speed-limited by library architecture.
+- **GxEPD2 (`GxEPD2/GDEQ0426T82/MacPaint`)**: Fast (~0.5s/dot), but prone to ghosting unless overlapping history is redrawn. `GxEPD2_BW::firstPage()` clears the window scratch buffer with `fillScreen(GxEPD_WHITE)`. Without redrawing recent overlapping dots, each new dot's bounding box clears overlapping edges of previous dots to white. Mitigated by redrawing the trailing 16 points inside the paged loop. Note that `GxEPD2_426_GDEQ0426T82::_setPartialRamArea()` inverts Y (`HEIGHT - y - h`) with entry mode `0x01` (y decrease).

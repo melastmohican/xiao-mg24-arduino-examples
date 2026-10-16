@@ -1,0 +1,22 @@
+#include "Display_EPD_W21_spi.h"
+
+void SPI_Write(unsigned char value)
+{
+  EPD_SPI_PORT.transfer(value);
+}
+
+void EPD_W21_WriteCMD(unsigned char command)
+{
+  EPD_W21_CS_0;
+  EPD_W21_DC_0;
+  SPI_Write(command);
+  EPD_W21_CS_1;
+}
+
+void EPD_W21_WriteDATA(unsigned char datas)
+{
+  EPD_W21_CS_0;
+  EPD_W21_DC_1;
+  SPI_Write(datas);
+  EPD_W21_CS_1;
+}
