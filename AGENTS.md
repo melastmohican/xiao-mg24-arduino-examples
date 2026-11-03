@@ -38,6 +38,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEY0213F52/`, `GxEPD2/GDEY0213F52/Demo/`, `Adafruit_EPD/XIAO_GDEY0213F52/` | `protocol_stack=none` |
 | `good_display/GDEY0266T90H/`, `GxEPD2/GDEY0266T90H/Demo/`, `Adafruit_EPD/XIAO_GDEY0266T90H/` | `protocol_stack=none` |
 | `good_display/GDEY037T03_4G/` | `protocol_stack=none` |
+| `good_display/GDEW0102I4FC/`, `GxEPD2/GDEW0102I4FC/Demo/`, `Adafruit_EPD/XIAO_GDEW0102I4FC/` | `protocol_stack=none` |
 | `GxEPD2/GDEQ0426T82/MacPaint/`, `Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint/`, `good_display/GDEQ0426T82_MacPaint/` | `protocol_stack=none` |
 
 ```sh
@@ -371,3 +372,17 @@ Driver architecture and partial update comparison:
 - **Good Display (`good_display/GDEQ0426T82_MacPaint`)**: Best performance (~0.45s/dot, zero ghosting). Maintains a persistent 48 KB canvas in MCU RAM, writes only the 18-byte bounding box to SSD1677 window registers (`0x44`/`0x45`/`0x4E`/`0x4F`), and syncs both current (`0x24`) and differential (`0x26`) RAM. Requires `EPD_FLIP_Y 1` (Y-inversion) for panel gate alignment.
 - **Adafruit_EPD (`Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint`)**: Accurate but slow (~1.5s/dot). `Adafruit_SSD1677` lacks windowed SPI streaming, so `displayPartial()` retransmits the full 48,000-byte frame buffer twice over SPI per point (96 KB total) with soft reset and analog power cycling. High stroke quality, but fundamentally speed-limited by library architecture.
 - **GxEPD2 (`GxEPD2/GDEQ0426T82/MacPaint`)**: Fast (~0.5s/dot), but prone to ghosting unless overlapping history is redrawn. `GxEPD2_BW::firstPage()` clears the window scratch buffer with `fillScreen(GxEPD_WHITE)`. Without redrawing recent overlapping dots, each new dot's bounding box clears overlapping edges of previous dots to white. Mitigated by redrawing the trailing 16 points inside the paged loop. Note that `GxEPD2_426_GDEQ0426T82::_setPartialRamArea()` inverts Y (`HEIGHT - y - h`) with entry mode `0x01` (y decrease).
+
+## The Good Display 1.02" (monochrome) / GDEW0102I4FC sketches
+
+The 1.02-inch monochrome flexible e-Paper panel: 80x128, UC8175 controller, 1-bit monochrome black & white (Good Display `GDEW0102I4FC`, DESPI-C102 adapter board). Same six pins (`RST D0`, `CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered by three independent driver paths:
+
+- `good_display/GDEW0102I4FC/`: Good Display official vendor sample adapted for the XIAO MG24, demonstrating full refresh (3s) and deep sleep.
+- `GxEPD2/GDEW0102I4FC/Demo/`: Stock `GxEPD2_102` class with `<GxEPD2_BW.h>`, running the 5-screen monochrome demo suite. Fits in a single 1,280-byte RAM buffer on the XIAO MG24.
+- `Adafruit_EPD/XIAO_GDEW0102I4FC/`: In-sketch `ThinkInk_102_Mono_GDEW0102I4FC` panel class subclassing `Adafruit_UC8151D(128, 80)`. Uses long-axis-first layout to enforce 10 bytes per scanline, `setRotation(1)` for 80x128 portrait orientation, and overrides `busy_wait()` to poll the hardware BUSY pin directly.
+
+Hardware and controller specifics:
+- **BUSY is active LOW** on UC8175 (0 = busy, 1 = ready/idle).
+- **Pixel packing**: 1 bit per pixel (0 = Black, 1 = White), 8 pixels per byte (10 bytes/row, 128 rows, 1,280 bytes total).
+- **RAM layout in Adafruit_EPD**: `Adafruit_EPD` sets bytes-per-scanline from `HEIGHT / 8`. Passing `(128, 80)` long axis first gives 80 / 8 = 10 bytes per row, matching UC8175's hardware line buffer.
+- **Refresh timing**: Full refresh takes ~3s. Deep sleep is `0x50 0xF7`, `0x02`, `0x07 0xA5`.
