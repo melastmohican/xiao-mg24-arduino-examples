@@ -39,6 +39,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEY0266T90H/`, `GxEPD2/GDEY0266T90H/Demo/`, `Adafruit_EPD/XIAO_GDEY0266T90H/` | `protocol_stack=none` |
 | `good_display/GDEY037T03_4G/` | `protocol_stack=none` |
 | `good_display/GDEW0102I4FC/`, `GxEPD2/GDEW0102I4FC/Demo/`, `Adafruit_EPD/XIAO_GDEW0102I4FC/` | `protocol_stack=none` |
+| `GxEPD2/GDEY042T81/Demo/`, `Adafruit_EPD/XIAO_GDEY042T81/`, `good_display/GDEY042T81/`, `Waveshare_4in2/` | `protocol_stack=none` |
 | `GxEPD2/GDEQ0426T82/MacPaint/`, `Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint/`, `good_display/GDEQ0426T82_MacPaint/` | `protocol_stack=none` |
 
 ```sh
@@ -80,7 +81,7 @@ ePaper Driver Board for XIAO v2*. Eleven panels: `GDEM0213B74` (2.13" BW),
 `GDEY0266T90` (2.66" BW 152x296), `GDEY037T03` (3.7" BW), `GDEQ0426T82` (4.26" BW 800x480),
 `GDEH0154Z90` (1.54" 3-color), `GDEY0266Z90` (2.66" 3-color 152x296), `GDEY0213F51` (2.13" 4-color),
 `GDEM0154F51H` (1.54" 4-color 200x200), `GDEM037F51` (3.7" 4-color 240x416),
-`GDEW0215T12` (2.15" BW 208x112), `GDEM0154F61H` (1.54" 4-color 200x200), `GDEY0213F52` (2.13" 4-color 250x122), and `GDEY0266T90H` (2.66" BW 360x184).
+`GDEW0215T12` (2.15" BW 208x112), `GDEM0154F61H` (1.54" 4-color 200x200), `GDEY0213F52` (2.13" 4-color 250x122), `GDEY0266T90H` (2.66" BW 360x184), and `GDEY042T81` (4.2" BW 400x300).
 
 ## The GxEPD2 demo template
 
@@ -386,3 +387,19 @@ Hardware and controller specifics:
 - **Pixel packing**: 1 bit per pixel (0 = Black, 1 = White), 8 pixels per byte (10 bytes/row, 128 rows, 1,280 bytes total).
 - **RAM layout in Adafruit_EPD**: `Adafruit_EPD` sets bytes-per-scanline from `HEIGHT / 8`. Passing `(128, 80)` long axis first gives 80 / 8 = 10 bytes per row, matching UC8175's hardware line buffer.
 - **Refresh timing**: Full refresh takes ~3s. Deep sleep is `0x50 0xF7`, `0x02`, `0x07 0xA5`.
+
+## The Good Display 4.2" / GDEY042T81 (Waveshare 4.2" V2) sketches
+
+The 4.2-inch monochrome e-Paper panel: 400x300, SSD1683 controller, 1-bit monochrome black & white with 4-level grayscale and fast/partial refresh support (Good Display `GDEY042T81`, Waveshare 4.2inch e-Paper V2). Same Seeed driver board, same six pins (`RST D0`, `CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered by four independent driver paths:
+
+- `GxEPD2/GDEY042T81/Demo/`: Stock `GxEPD2_420_GDEY042T81` class with `<GxEPD2_BW.h>`, running the standard 6-screen monochrome demo suite laid out for the native 400x300 landscape canvas (`DEMO_ROTATION 0`). Fits in a single 15,000-byte RAM buffer on the XIAO MG24.
+- `Adafruit_EPD/XIAO_GDEY042T81/`: Stock `ThinkInk_420_Grayscale4_MFGN` class with `<Adafruit_ThinkInk.h>`, running in `THINKINK_GRAYSCALE4` mode: a banner with a 4-level gray swatch row, then concentric gray rounded rectangles. Text is centered with `getTextBounds`, not hard-coded widths.
+- `good_display/GDEY042T81/`: Good Display official vendor sample (`AU-GDEY042T81-FP4G-20240801`) adapted for the XIAO MG24, demonstrating full refresh (2.0s), fast refresh (1.5s), 4-gray, and a partial refresh clock. Command sequences, bitmaps and clock coordinates match the vendor package; `EPD_Dis_Part_Time()` writes all five clock tiles with `EPD_Dis_Part_RAM()` and refreshes once, as the vendor does.
+- `Waveshare_4in2/`: Waveshare vendor driver adapted from `epd4in2_V2` with 40s BUSY timeout, exercising full 2-gray bitmap (`IMAGE_BUTTERFLY`), partial refresh with `Paint`, and 4-gray display modes.
+
+Hardware and controller specifics:
+- **BUSY is active HIGH** on SSD1683 (1 = busy, 0 = idle).
+- **Pixel packing**: 1 bit per pixel (0 = Black, 1 = White), 8 pixels per byte (50 bytes/row, 300 rows, 15,000 bytes total).
+- **Refresh timing**: Full refresh takes ~2s; fast refresh takes ~1.0s to 1.5s; partial refresh updates in ~0.4s without full-screen flicker.
+- **Orientation**: Default landscape is 400x300 (`rotation 0` in GxEPD2, `rotation 1` in Adafruit_EPD). In GxEPD2, `rotation 1` is *portrait* (300x400), not landscape. Both orientations were tried on hardware and the GxEPD2 demo ships in landscape.
+- **Vendor sample orientation**: Good Display's full-screen images are landscape with the FPC at the bottom, matching their website video. The vendor partial-refresh clock bitmaps are laid out sideways relative to those images (it reads bottom to top). That is vendor behavior, identical in the downloaded package, and was left as is.
