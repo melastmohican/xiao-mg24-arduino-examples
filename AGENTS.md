@@ -40,6 +40,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEY037T03_4G/` | `protocol_stack=none` |
 | `good_display/GDEW0102I4FC/`, `GxEPD2/GDEW0102I4FC/Demo/`, `Adafruit_EPD/XIAO_GDEW0102I4FC/` | `protocol_stack=none` |
 | `GxEPD2/GDEY042T81/Demo/`, `Adafruit_EPD/XIAO_GDEY042T81/`, `good_display/GDEY042T81/`, `Waveshare_4in2/` | `protocol_stack=none` |
+| `good_display/GDEY029F52/`, `GxEPD2/GDEY029F52/Demo/`, `Adafruit_EPD/XIAO_GDEY029F52/`, `Waveshare_2in9g/` | `protocol_stack=none` |
 | `GxEPD2/GDEQ0426T82/MacPaint/`, `Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint/`, `good_display/GDEQ0426T82_MacPaint/` | `protocol_stack=none` |
 
 ```sh
@@ -81,7 +82,7 @@ ePaper Driver Board for XIAO v2*. Eleven panels: `GDEM0213B74` (2.13" BW),
 `GDEY0266T90` (2.66" BW 152x296), `GDEY037T03` (3.7" BW), `GDEQ0426T82` (4.26" BW 800x480),
 `GDEH0154Z90` (1.54" 3-color), `GDEY0266Z90` (2.66" 3-color 152x296), `GDEY0213F51` (2.13" 4-color),
 `GDEM0154F51H` (1.54" 4-color 200x200), `GDEM037F51` (3.7" 4-color 240x416),
-`GDEW0215T12` (2.15" BW 208x112), `GDEM0154F61H` (1.54" 4-color 200x200), `GDEY0213F52` (2.13" 4-color 250x122), `GDEY0266T90H` (2.66" BW 360x184), and `GDEY042T81` (4.2" BW 400x300).
+`GDEW0215T12` (2.15" BW 208x112), `GDEM0154F61H` (1.54" 4-color 200x200), `GDEY0213F52` (2.13" 4-color 250x122), `GDEY0266T90H` (2.66" BW 360x184), `GDEY042T81` (4.2" BW 400x300), and `GDEY029F52` (2.9" 4-color 296x128).
 
 ## The GxEPD2 demo template
 
@@ -403,3 +404,20 @@ Hardware and controller specifics:
 - **Refresh timing**: Full refresh takes ~2s; fast refresh takes ~1.0s to 1.5s; partial refresh updates in ~0.4s without full-screen flicker.
 - **Orientation**: Default landscape is 400x300 (`rotation 0` in GxEPD2, `rotation 1` in Adafruit_EPD). In GxEPD2, `rotation 1` is *portrait* (300x400), not landscape. Both orientations were tried on hardware and the GxEPD2 demo ships in landscape.
 - **Vendor sample orientation**: Good Display's full-screen images are landscape with the FPC at the bottom, matching their website video. The vendor partial-refresh clock bitmaps are laid out sideways relative to those images (it reads bottom to top). That is vendor behavior, identical in the downloaded package, and was left as is.
+
+## The Good Display 2.9" (4-color) / GDEY029F52 sketches
+
+The 2.9-inch 4-color e-Paper panel: 296x128 (128x296 native raster), JD79661 controller, 4 native colors (Black, White, Yellow, Red) at 2 bits per pixel (Good Display `GDEY029F52`, FPC `FPC-A034`, rear sticker `029SW-F52-B2`). **Not the same panel as `GDEY029F51H`** (nor, any longer, as the Waveshare 2.9" (G) epd-db describes) (168x384, JD79667): the two are about the same physical size and both sell as "2.9" 4-color", but the controller, resolution and init differ. A unit ordered as GDEY029F51H arrived with this F52 sticker and read `R70H = [83, 02, 01]` (JD79661AA datasheet `03 02 01` with the top bit set; JD79667AA would be `05 02 01`). Same Seeed driver board, same six pins (`RST D0`, `CS D1`, `BUSY D2`, `DC D3`, `SCK D8`, `MOSI D10`). Covered by four driver paths. Waveshare's *current* 2.9" (G) is this same panel (296x128, 29.056 x 66.896 mm active area, 16s/11s refresh); epd-db still maps that Waveshare product to the 168x384 GDEY029F51H and is stale on this point (Waveshare changed the product, checked 2026-11-05):
+
+- `good_display/GDEY029F52/`: Good Display official vendor sample (`AU-GDEY029F52-F-20250609`) adapted for the XIAO MG24. Command, data and delay sequences and bitmaps are identical to the vendor package; the only code difference is a 40 s BUSY timeout. Demonstrates full refresh (~16s), fast update (`EPD_init_Fast`, ~11s), and the single-color fills (disabled by default in the vendor sample, enabled here as in the other 4-color ports).
+- `GxEPD2/GDEY029F52/Demo/`: In-sketch `GxEPD2_290c_GDEY029F52` class subclassing `GxEPD2_EPD` with `<GxEPD2_4C.h>`, running the standard 6-screen 4-color suite laid out for the 296x128 landscape canvas. GxEPD2 has no stock class for this panel; the class copies the `GxEPD2_213c_GDEY0213F52` pipeline and uses the vendor's full and fast init. It reports `GxEPD2::GDEY029F51H` as its panel enum (no F52 value exists). Single 9,472-byte buffer.
+- `Waveshare_2in9g/`: Waveshare's vendored driver (`DEV_Config`, `EPD_2in9g`, `GUI_Paint`, `ImageData`, `fonts`, from `2.9inch_e-Paper_G.zip` Arduino_R4, EPD_2in9g V1.0 2025-12-02). Only `DEV_Config.h/.cpp` and the `.ino` are board-specific; `EPD_2in9g.cpp` differs from Waveshare's only by a 40 s timeout on both BUSY waits. Same JD79661 command set as Good Display's sample; Waveshare's normal init uses the fast-style booster values plus `0x41`/`0x65`, where Good Display's normal init does not. Displays the official 296x128 bitmap with the fast init, draws 4-color graphics with GUI_Paint (rotated 90 degrees), then clears and sleeps.
+- `Adafruit_EPD/XIAO_GDEY029F52/`: In-sketch `ThinkInk_290_Quadcolor_GDEY029F52` panel class subclassing `Adafruit_JD79661` with `(128, 296)` and the vendor's init table (PSR `0x0F 0x29`, TRES 128x296) instead of Adafruit's default JD79661 init (PSR `0x8F`).
+
+Hardware and controller specifics:
+- **BUSY is active LOW** on JD79661 (0 = busy, 1 = ready/idle).
+- **Pixel packing**: 2 bits per pixel (00 = Black, 01 = White, 10 = Yellow, 11 = Red), 4 pixels per byte (32 bytes/row, 296 rows, 9,472 bytes total). The vendor bitmaps use a different color code (00 white, 01 yellow, 10 red, 11 black) and `Color_get()` converts it.
+- **Refresh timing**: Full refresh takes ~16s; fast refresh takes ~11s (Good Display product page 742; epd-db's 12s is stale). No partial refresh.
+- **Orientation**: with rotation 1 (296x128 landscape) both library sketches display upright with the FPC on the right. Good Display's vendor image is upside down in that mounting (upright with the FPC on the left); that is the vendor's default init and was left as is.
+- **Re-init is required before every full update**, as with the other Good Display samples.
+- **Verified on hardware**: all four sketches were flashed and filmed on a real unit (sticker `029SW-F52-B2`, lot `N2B3F02`, R70H `[83, 02, 01]`) on 2026-11-05, mounted with the FPC on the right. The GxEPD2, Adafruit_EPD and Waveshare sketches show upright content in that mounting; the Good Display vendor bitmap is upside down in it (upright with the FPC on the left).
