@@ -55,6 +55,7 @@ The Silicon Labs Arduino core compiles the radio stack directly into the binary.
 - `ble_scan/`: Event-driven BLE 5.4 scanner processing scan responses via the `sl_bt_on_event()` callback.
 - `matter_lightbulb/`: Matter-over-Thread lightbulb accessory demo.
 - `matter_decommission/`: Utility sketch that clears non-volatile Matter fabric credentials when re-pairing fails.
+- `epd_diag_jd7966x_rev/`: Diagnostic that reads the `R70H` revision register of JD79661/JD79667/JD79676 e-paper controllers over a bit-banged 3-wire bus, to tell panels apart when a picture cannot (e.g. GDEY029F52 reads `83 02 01`, a GDEY029F51H would read `05 02 01`). Never powers on or refreshes the panel.
 
 ### 2. GxEPD2 Display Demos (`GxEPD2/`)
 
@@ -124,6 +125,7 @@ Low-level vendor examples demonstrating specific controller waveform modes:
 - `good_display/GDEW0102I4FC/`: 1.02 inch monochrome sample (80x128, UC8175) testing full refresh and deep sleep.
 - `good_display/GDEY042T81/`: 4.2 inch monochrome sample (400x300, SSD1683) testing full refresh (2.0s), fast refresh 1 (1.5s) and 2 (1.0s), and a partial refresh clock (single-refresh update matching the vendor package; the clock is drawn sideways by the vendor bitmaps).
 - `good_display/GDEY029F52/`: 2.9 inch 4-color sample (296x128, JD79661) testing full refresh (~16s), fast update (~11s), and color fills.
+- `good_display/GDEY029F51H/`: 2.9 inch 4-color vendor sample (168x384, JD79667). Not verified on a real F51H; on a mis-shipped GDEY029F52 unit it never draws and every BUSY wait times out.
 
 ## Build and Flash Examples
 
@@ -135,6 +137,8 @@ arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none GxEPD2/G
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none Adafruit_EPD/XIAO_GDEY042T81
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none good_display/GDEY042T81
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none good_display/GDEY029F52
+arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none good_display/GDEY029F51H
+arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none epd_diag_jd7966x_rev
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none GxEPD2/GDEY029F52/Demo
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none Adafruit_EPD/XIAO_GDEY029F52
 arduino-cli compile -b SiliconLabs:silabs:xiao_mg24:protocol_stack=none Waveshare_2in9g
@@ -171,6 +175,7 @@ arduino-cli monitor -p /dev/cu.usbmodemXXXX -c baudrate=115200
 - Panel Orientation: 2.66 inch panels (SSD1680) have the FPC connector positioned so that standard coordinate zero sits at the opposite corner. Each driver applies a 180-degree rotation fix (`DEMO_ROTATION 3` in GxEPD2, `setRotation(2)` in Adafruit_EPD, `EPD_INIT_180` in Good Display, and raster reversal in Waveshare C drivers).
 - 4.2" GDEY042T81 / Waveshare 4.2" V2 (SSD1683): Resolution is 400x300 monochrome (50 bytes per row across 300 rows = 15,000 bytes total). BUSY is active high (1 = busy, 0 = idle). Supports full refresh (~2s), fast refresh (1.0s to 1.5s), and partial refresh without full-screen flicker. Supported across all four driver families: stock GxEPD2 (`GxEPD2_420_GDEY042T81`), stock Adafruit_EPD (`ThinkInk_420_Grayscale4_MFGN`), Good Display vendor sample, and Waveshare `epd4in2_V2`.
 - 2.9" GDEY029F52 (JD79661): Resolution is 296x128 with 4 native colors (Black, White, Yellow, Red) at 2 bits per pixel (128x296 native raster, 32 bytes per row across 296 rows = 9,472 bytes total). Full refresh takes ~16s and fast refresh ~11s. Not the same panel as GDEY029F51H (168x384, JD79667): read the R70H revision register (`70H`) to tell them apart, `03 02 01` for JD79661AA and `05 02 01` for JD79667AA (a Good Display unit reads with the top bit set, e.g. `83 02 01`). GxEPD2 and Adafruit_EPD have no stock class, so both live in-sketch. Waveshare's current 2.9" (G) is the same 296x128 panel (epd-db still lists the older 168x384 F51H under that name), covered by `Waveshare_2in9g/`.
+- 2.9" GDEY029F51H (JD79667, 168x384) is a different panel from the GDEY029F52 despite the same size and a similar init. Only the vendor sample is included, untested on a real F51H: the F51H init does not complete on a JD79661 panel (BUSY never releases). Use `epd_diag_jd7966x_rev/` to read which controller a unit has before choosing a sketch.
 - 2.15" GDEW0215T12 (UC8151D): Resolution is 208x112 monochrome (14 bytes per gate row across 208 gates = 2,912 bytes total). In Adafruit_EPD, rotation 0 provides the native landscape orientation, and partial refresh uses the 0.5s differential waveform LUT across the full 2,912-byte framebuffer without full-screen flicker.
 - 1.54" GDEM0154F61H (SSD2681): Resolution is 200x200 with 4 native colors (Black, White, Yellow, Red) at 2 bits per pixel (50 bytes per row, 10,000 bytes total). Full refresh takes ~20s and fast refresh takes ~12-15s. Supported across Good Display vendor code, in-sketch GxEPD2 panel driver (`GxEPD2_154c_GDEM0154F61H`) with `<GxEPD2_4C.h>`, and an in-sketch Adafruit_EPD subclass (`ThinkInk_154_Quadcolor_GDEM0154F61H`) deriving from `Adafruit_JD79661`.
 - 2.13" GDEY0213F52 (JD79676A): Resolution is 250x122 (128x250 native RAM, 122 visible) with 4 native colors (Black, White, Yellow, Red) at 2 bits per pixel (32 bytes per row, 8,000 bytes total). Full refresh takes ~11s. Supported across Good Display vendor code, in-sketch GxEPD2 panel driver (`GxEPD2_213c_GDEY0213F52`) with `<GxEPD2_4C.h>`, and an in-sketch Adafruit_EPD subclass (`ThinkInk_213_Quadcolor_GDEY0213F52`) deriving from `Adafruit_JD79661`. Stock GxEPD2 has no F52 class. The GxEPD2 class needs a 40 s BUSY timeout because a refresh takes ~11s. Verified on hardware with `DEMO_ROTATION 1`.

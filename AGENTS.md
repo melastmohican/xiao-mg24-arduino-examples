@@ -41,6 +41,7 @@ radio stack is compiled into the core, not linked from the sketch:
 | `good_display/GDEW0102I4FC/`, `GxEPD2/GDEW0102I4FC/Demo/`, `Adafruit_EPD/XIAO_GDEW0102I4FC/` | `protocol_stack=none` |
 | `GxEPD2/GDEY042T81/Demo/`, `Adafruit_EPD/XIAO_GDEY042T81/`, `good_display/GDEY042T81/`, `Waveshare_4in2/` | `protocol_stack=none` |
 | `good_display/GDEY029F52/`, `GxEPD2/GDEY029F52/Demo/`, `Adafruit_EPD/XIAO_GDEY029F52/`, `Waveshare_2in9g/` | `protocol_stack=none` |
+| `good_display/GDEY029F51H/`, `epd_diag_jd7966x_rev/` | `protocol_stack=none` |
 | `GxEPD2/GDEQ0426T82/MacPaint/`, `Adafruit_EPD/XIAO_GDEQ0426T82_MacPaint/`, `good_display/GDEQ0426T82_MacPaint/` | `protocol_stack=none` |
 
 ```sh
@@ -421,3 +422,21 @@ Hardware and controller specifics:
 - **Orientation**: with rotation 1 (296x128 landscape) both library sketches display upright with the FPC on the right. Good Display's vendor image is upside down in that mounting (upright with the FPC on the left); that is the vendor's default init and was left as is.
 - **Re-init is required before every full update**, as with the other Good Display samples.
 - **Verified on hardware**: all four sketches were flashed and filmed on a real unit (sticker `029SW-F52-B2`, lot `N2B3F02`, R70H `[83, 02, 01]`) on 2026-11-05, mounted with the FPC on the right. The GxEPD2, Adafruit_EPD and Waveshare sketches show upright content in that mounting; the Good Display vendor bitmap is upside down in it (upright with the FPC on the left).
+
+## The Good Display 2.9" (4-color) / GDEY029F51H sketch and the R70H probe
+
+`good_display/GDEY029F51H/` is Good Display's vendor sample (`AU-GDEY029F51H-20230712`, JD79667, 168x384 portrait, 16,128-byte bitmap) adapted for the XIAO MG24 the same way as `good_display/GDEY029F52/`: Seeed pins, 40 s BUSY timeout, one SPI transaction, fills enabled, halts after the demo. Command, data and delay sequences and the bitmap are identical to the vendor package. It has no fast-update init, because the vendor sample has none. **It has not been verified on a real GDEY029F51H.** The only unit available was shipped as an F51H but is a GDEY029F52, and on it the sketch never draws: every BUSY wait runs to the 40 s timeout (`GDEY029F51H BUSY timeout!` on Serial). The only init difference from the F52 sample is TRES (`0x61`: 168x384 against 128x296) and the data length, so a wrong resolution on a JD79661 panel is the likely cause (not isolated by changing just that value). The F52 init on the same unit started updating immediately.
+
+`epd_diag_jd7966x_rev/` is a diagnostic, not a demo: it reads the `R70H` REVISION register (command `0x70`, then three bytes) of JD7966x panels over a bit-banged 3-wire bus on SCK `D8` and the bidirectional SDA `D10` (same wire as MOSI; `SPI.begin()` is never called). It is a port of `xiao-esp32c3-blinky/examples/epd_diag_jd7966x_rev.rs` (epdsi `Spi3Bus::read_jd7966x_revision`), never powers the panel on or refreshes it, and also knows the JD79667AA value. It tells units apart when a picture cannot:
+
+| `R70H` | Meaning |
+| --- | --- |
+| `03 02 01` | JD79661AA datasheet value |
+| `05 02 01` | JD79667AA datasheet value (a real GDEY029F51H) |
+| `09 02 01` | JD79676AA datasheet value (Seeed 5779, `0213SW-F52-B2`) |
+| `89 02 01` | Good Display GDEY0213F52, lot `N5B3S02` |
+| `09 01 01` | Adafruit `ZJY122250-0213EAH-E5` |
+| `83 02 01` | Good Display 2.9" GDEY029F52, lot `N2B3F02` (JD79661AA with the top bit set); read on both the ESP32-C3 and the MG24 |
+
+Units seen so far return the datasheet value with the top bit set, so the sketch also compares the low 7 bits. `FF FF FF` or `00 00 00` means the read path did not reach the IC. The sketch waits 8 s at boot (attach the Serial Monitor first) and reprints its summary every 10 s. Other registers the JD79667AA datasheet lets the host read are R9FH (100 reserved MTP bytes), R92H (MTP contents), R81H (VCOM), R43H (temperature) and R51H (power condition). Never send `0x90` (PGM) or `0x91` (APG), which program the MTP.
+
